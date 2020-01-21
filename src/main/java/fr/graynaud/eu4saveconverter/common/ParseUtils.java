@@ -12,7 +12,7 @@ public final class ParseUtils {
 
     public static Optional<String> parseString(String content, String key) {
         if (content.contains(key)) {
-            return Optional.of(getCleanString(content, key));
+            return Optional.ofNullable(getCleanString(content, key));
         }
 
         return Optional.empty();
@@ -50,6 +50,18 @@ public final class ParseUtils {
         if (content.contains(key)) {
             return getCleanLineString(content, key).stream()
                                                    .map(Utils::nullSafeParseLong)
+                                                   .filter(Optional::isPresent)
+                                                   .map(Optional::get)
+                                                   .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>();
+    }
+
+    public static List<Double> parseLineDouble(String content, String key) {
+        if (content.contains(key)) {
+            return getCleanLineString(content, key).stream()
+                                                   .map(Utils::nullSafeParseDouble)
                                                    .filter(Optional::isPresent)
                                                    .map(Optional::get)
                                                    .collect(Collectors.toList());
@@ -147,7 +159,7 @@ public final class ParseUtils {
         if (content.contains(key + "=")) {
             value = Arrays.stream(content.trim().split(key))
                           .skip(1)
-                          .map(ParseUtils::formatStringValue)
+                          .map(ParseUtils::cleanString)
                           .filter(Objects::nonNull)
                           .map(s -> {
                               int index = s.indexOf("\n");
@@ -157,7 +169,7 @@ public final class ParseUtils {
 
                               return s.replace("=", "");
                           })
-                          .map(ParseUtils::formatStringValue)
+                          .map(ParseUtils::cleanString)
                           .filter(Objects::nonNull)
                           .collect(Collectors.toList());
         }
@@ -177,8 +189,8 @@ public final class ParseUtils {
                 endIndex = content.length();
             }
 
-            value = Arrays.stream(content.substring(keyIndex, endIndex).trim().split("[\r|\n]+"))
-                          .map(ParseUtils::formatStringValue)
+            value = Arrays.stream(content.substring(keyIndex, endIndex).trim().split("[\n]+"))
+                          .map(ParseUtils::cleanString)
                           .filter(Objects::nonNull)
                           .collect(Collectors.toList());
         }
@@ -230,7 +242,7 @@ public final class ParseUtils {
         return content.substring(beginIndex, beginIndex + skipNextObject(content, beginIndex));
     }
 
-    public static String formatStringValue(String s) {
+    public static String cleanString(String s) {
         s = s.trim();
 
         if (s.isEmpty() || s.isBlank()) {
@@ -257,7 +269,7 @@ public final class ParseUtils {
             }
 
             value = Arrays.stream(content.substring(keyIndex, endIndex).trim().split("\\s+"))
-                          .map(ParseUtils::formatStringValue)
+                          .map(ParseUtils::cleanString)
                           .filter(Objects::nonNull)
                           .collect(Collectors.toList());
 
@@ -278,7 +290,7 @@ public final class ParseUtils {
                 endIndex = content.length();
             }
 
-            value = formatStringValue(content.substring(keyIndex, endIndex));
+            value = cleanString(content.substring(keyIndex, endIndex));
         }
 
         return value;

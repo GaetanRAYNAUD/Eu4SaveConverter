@@ -1,12 +1,10 @@
 package fr.graynaud.eu4saveconverter.service.object.save;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 public class Diplomacy extends Eu4Object {
 
     private List<Dependency> dependencies;

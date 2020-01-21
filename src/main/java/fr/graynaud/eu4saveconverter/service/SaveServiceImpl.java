@@ -16,6 +16,9 @@ public class SaveServiceImpl implements SaveService {
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveServiceImpl.class);
 
     //Todo war's history !!!!
+    //Todo custom nations ideas index
+    //Todo national ideas or custom_national_ideas_level
+    //Todo custom colors + flag + map color + country color
 
     @Override
     public Gamestate saveToData(MultipartFile multipartFile) throws IOException {

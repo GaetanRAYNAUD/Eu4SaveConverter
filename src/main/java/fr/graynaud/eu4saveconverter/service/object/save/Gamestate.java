@@ -1,13 +1,12 @@
 package fr.graynaud.eu4saveconverter.service.object.save;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import fr.graynaud.eu4saveconverter.common.Constants;
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 public class Gamestate extends Eu4Object {
 
     private Map<String, String> playersCountries;
@@ -32,9 +31,11 @@ public class Gamestate extends Eu4Object {
 
     private String pope;
 
-    private Object provinces;
+    private Map<Long, Province> provinces;
 
-    private Object countries;
+    private Map<Long, String> advisors;
+
+    private Map<String, Country> countries;
 
     private Diplomacy diplomacy;
 
@@ -134,19 +135,27 @@ public class Gamestate extends Eu4Object {
         this.pope = pope;
     }
 
-    public Object getProvinces() {
+    public Map<Long, String> getAdvisors() {
+        return advisors;
+    }
+
+    public void setAdvisors(Map<Long, String> advisors) {
+        this.advisors = advisors;
+    }
+
+    public Map<Long, Province> getProvinces() {
         return provinces;
     }
 
-    public void setProvinces(Object provinces) {
+    public void setProvinces(Map<Long, Province> provinces) {
         this.provinces = provinces;
     }
 
-    public Object getCountries() {
+    public Map<String, Country> getCountries() {
         return countries;
     }
 
-    public void setCountries(Object countries) {
+    public void setCountries(Map<String, Country> countries) {
         this.countries = countries;
     }
 
@@ -199,8 +208,21 @@ public class Gamestate extends Eu4Object {
         this.greatPowers = parseGreatPowers(startContent);
         this.empire = new Hre(startContent);
         this.celestialEmpire = new CelestialEmpire(startContent);
-        //        this.provinces = ParseUtils.parseObjectData(startContent, "");
-        //        this.countries = ParseUtils.parseObjectData(startContent, "");
+        this.provinces = Arrays.stream(provincesContent.split("(?=\\n-\\d+=\\{)"))
+                               .skip(1)
+                               .map(ParseUtils::cleanString)
+                               .map(Province::new)
+                               .collect(Collectors.toMap(Province::getId, Function.identity()));
+        this.advisors = this.provinces.values()
+                                      .stream()
+                                      .filter(p -> p.getAdvisors() != null)
+                                      .flatMap(p -> p.getAdvisors().entrySet().stream())
+                                      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        this.countries = Arrays.stream(countriesContent.split("(?=\\n\\t(([A-Z]{3})|([A-Z][0-9]{2}))=\\{)"))
+                               .skip(4)
+                               .map(ParseUtils::cleanString)
+                               .map(country -> new Country(country, Constants.DATE_FORMAT.format(this.startDate)))
+                               .collect(Collectors.toMap(Country::getTag, Function.identity()));
         this.diplomacy = new Diplomacy(endContent);
         this.activeWars = ParseUtils.getListSameObject(endContent, "\nactive_war={")
                                     .stream()
@@ -229,7 +251,7 @@ public class Gamestate extends Eu4Object {
 
         List<String> areas = Arrays.stream(subContent.split("\\n\\w.*=\\{"))
                                    .skip(1)
-                                   .map(ParseUtils::formatStringValue)
+                                   .map(ParseUtils::cleanString)
                                    .filter(Objects::nonNull)
                                    .filter(s -> s.contains("state={"))
                                    .collect(Collectors.toList());

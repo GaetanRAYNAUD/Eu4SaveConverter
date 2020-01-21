@@ -1,17 +1,13 @@
 package fr.graynaud.eu4saveconverter.service.object.save;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@JsonInclude(value = JsonInclude.Include.NON_EMPTY)
 public class War extends Eu4Object {
 
     private String name;
-
-    private WarHistory history;
 
     private List<WarParticipant> participants;
 
@@ -33,14 +29,6 @@ public class War extends Eu4Object {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public WarHistory getHistory() {
-        return history;
-    }
-
-    public void setHistory(WarHistory history) {
-        this.history = history;
     }
 
     public List<WarParticipant> getParticipants() {
@@ -86,7 +74,6 @@ public class War extends Eu4Object {
     @Override
     public void parse(String content) {
         this.name = ParseUtils.parseString(content, "name").orElse(null);
-        this.history = new WarHistory(content);
         this.participants = ParseUtils.getListSameObject(content, "participants")
                                       .stream()
                                       .map(WarParticipant::new)
