@@ -2,36 +2,50 @@ package fr.graynaud.eu4saveconverter.service;
 
 import fr.graynaud.eu4saveconverter.common.Constants;
 import fr.graynaud.eu4saveconverter.common.FileUtils;
+import fr.graynaud.eu4saveconverter.common.ParseUtils;
+import fr.graynaud.eu4saveconverter.common.exception.MissingFileException;
+import fr.graynaud.eu4saveconverter.controller.dto.SaveDTO;
 import fr.graynaud.eu4saveconverter.service.object.save.Gamestate;
+import fr.graynaud.eu4saveconverter.service.object.save.SaveFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.Map;
 
 @Service
 public class SaveServiceImpl implements SaveService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveServiceImpl.class);
 
-    //Todo war's history !!!!
-    //Todo custom nations ideas index
-    //Todo national ideas or custom_national_ideas_level
-    //Todo custom colors + flag + map color + country color
+    //Todo custom nations ideas index: 81 = 7.5% FL/lvl
 
     @Override
-    public Gamestate saveToData(MultipartFile multipartFile) throws IOException {
-        String content = FileUtils.unZipSave(multipartFile);
+    public SaveDTO saveToData(MultipartFile multipartFile) throws IOException {
+        Map<SaveFile, String> contents = FileUtils.unZipSave(multipartFile);
+        String gamestateContent = contents.get(SaveFile.GAMESTATE);
+        String metaContent = contents.get(SaveFile.META);
 
-        if (content == null) {
-            return null;
+        if (gamestateContent == null) {
+            throw new MissingFileException(SaveFile.GAMESTATE.name());
         }
 
-        if (content.startsWith(Constants.STARTING_TEXT)) {
-            content = content.substring(Constants.STARTING_TEXT.length());
+        if (metaContent == null) {
+            throw new MissingFileException(SaveFile.META.name());
         }
 
-        return new Gamestate(content);
+
+        if (gamestateContent.startsWith(Constants.STARTING_TEXT)) {
+            gamestateContent = gamestateContent.substring(Constants.STARTING_TEXT.length());
+        }
+
+        Gamestate gamestate = new Gamestate(gamestateContent);
+        LocalDate date = ParseUtils.parseDate(metaContent, "date").orElse(null);
+
+        return new SaveDTO(gamestate, date);
     }
 }

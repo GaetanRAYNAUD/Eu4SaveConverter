@@ -2,7 +2,7 @@ package fr.graynaud.eu4saveconverter.service.object.save;
 
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class DatableRelation extends Eu4Object {
 
@@ -10,7 +10,7 @@ public class DatableRelation extends Eu4Object {
 
     private String second;
 
-    private Date startDate;
+    private LocalDate startDate;
 
     public DatableRelation(String content) {
         super(content);
@@ -32,11 +32,11 @@ public class DatableRelation extends Eu4Object {
         this.second = second;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 

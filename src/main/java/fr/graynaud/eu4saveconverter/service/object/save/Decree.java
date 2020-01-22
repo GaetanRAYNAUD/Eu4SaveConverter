@@ -2,13 +2,13 @@ package fr.graynaud.eu4saveconverter.service.object.save;
 
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Decree extends Eu4Object {
 
     private String decreeName;
 
-    private Date decreeDate;
+    private LocalDate decreeDate;
 
     public Decree(String content) {
         super(content);
@@ -22,11 +22,11 @@ public class Decree extends Eu4Object {
         this.decreeName = decreeName;
     }
 
-    public Date getDecreeDate() {
+    public LocalDate getDecreeDate() {
         return decreeDate;
     }
 
-    public void setDecreeDate(Date decreeDate) {
+    public void setDecreeDate(LocalDate decreeDate) {
         this.decreeDate = decreeDate;
     }
 

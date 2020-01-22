@@ -1,5 +1,6 @@
 package fr.graynaud.eu4saveconverter.common;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -88,7 +89,7 @@ public final class ParseUtils {
         return new ArrayList<>();
     }
 
-    public static Optional<Date> parseDate(String content, String key) {
+    public static Optional<LocalDate> parseDate(String content, String key) {
         try {
             return Utils.nullSafeParseDate(getCleanString(content, key));
         } catch (DateTimeParseException ignored) {

@@ -2,7 +2,7 @@ package fr.graynaud.eu4saveconverter.service.object.save;
 
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Emperor extends Eu4Object {
 
@@ -10,7 +10,7 @@ public class Emperor extends Eu4Object {
 
     private String country;
 
-    private Date date;
+    private LocalDate date;
 
     public Emperor(String content) {
         super(content);
@@ -32,11 +32,11 @@ public class Emperor extends Eu4Object {
         this.country = country;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

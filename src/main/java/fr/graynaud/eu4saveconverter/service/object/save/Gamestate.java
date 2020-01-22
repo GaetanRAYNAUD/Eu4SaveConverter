@@ -3,6 +3,7 @@ package fr.graynaud.eu4saveconverter.service.object.save;
 import fr.graynaud.eu4saveconverter.common.Constants;
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ public class Gamestate extends Eu4Object {
 
     private String currentAge;
 
-    private Date startDate;
+    private LocalDate startDate;
 
     private Map<String, Map<String, State>> states;
 
@@ -63,11 +64,11 @@ public class Gamestate extends Eu4Object {
         this.currentAge = currentAge;
     }
 
-    public Date getStartDate() {
+    public LocalDate getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(LocalDate startDate) {
         this.startDate = startDate;
     }
 

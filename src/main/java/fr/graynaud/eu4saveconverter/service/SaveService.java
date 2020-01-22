@@ -1,11 +1,11 @@
 package fr.graynaud.eu4saveconverter.service;
 
-import fr.graynaud.eu4saveconverter.service.object.save.Gamestate;
+import fr.graynaud.eu4saveconverter.controller.dto.SaveDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 public interface SaveService {
 
-    Gamestate saveToData(MultipartFile multipartFile) throws IOException;
+    SaveDTO saveToData(MultipartFile multipartFile) throws IOException;
 }

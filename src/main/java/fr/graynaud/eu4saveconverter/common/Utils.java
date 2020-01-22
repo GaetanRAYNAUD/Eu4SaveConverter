@@ -1,7 +1,7 @@
 package fr.graynaud.eu4saveconverter.common;
 
-import java.text.ParseException;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 public final class Utils {
@@ -25,14 +25,14 @@ public final class Utils {
         return Optional.of(Double.valueOf(s));
     }
 
-    public static Optional<Date> nullSafeParseDate(String s) {
+    public static Optional<LocalDate> nullSafeParseDate(String s) {
         if (s == null) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(Constants.DATE_FORMAT.parse(s));
-        } catch (ParseException ignored) {
+            return Optional.of(LocalDate.parse(s, Constants.DATE_FORMAT));
+        } catch (DateTimeParseException ignored) {
             return Optional.empty();
         }
     }

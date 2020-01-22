@@ -2,21 +2,21 @@ package fr.graynaud.eu4saveconverter.service.object.save;
 
 import fr.graynaud.eu4saveconverter.common.ParseUtils;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class EndDatableRelation extends DatableRelation {
 
-    private Date endDate;
+    private LocalDate endDate;
 
     public EndDatableRelation(String content) {
         super(content);
     }
 
-    public Date getEndDate() {
+    public LocalDate getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
 

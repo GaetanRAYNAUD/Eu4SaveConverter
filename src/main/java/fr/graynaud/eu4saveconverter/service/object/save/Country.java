@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,9 +26,9 @@ public class Country {
 
     private List<Boolean> institutions;
 
-    private Date goldenAge;
+    private LocalDate goldenAge;
 
-    private Map<Date, String> ancientsTags;
+    private Map<LocalDate, String> ancientsTags;
 
     private Long capital;
 
@@ -170,19 +172,19 @@ public class Country {
         this.institutions = institutions;
     }
 
-    public Date getGoldenAge() {
+    public LocalDate getGoldenAge() {
         return goldenAge;
     }
 
-    public void setGoldenAge(Date goldenAge) {
+    public void setGoldenAge(LocalDate goldenAge) {
         this.goldenAge = goldenAge;
     }
 
-    public Map<Date, String> getAncientsTags() {
+    public Map<LocalDate, String> getAncientsTags() {
         return ancientsTags;
     }
 
-    public void setAncientsTags(Map<Date, String> ancientsTags) {
+    public void setAncientsTags(Map<LocalDate, String> ancientsTags) {
         this.ancientsTags = ancientsTags;
     }
 
@@ -721,9 +723,9 @@ public class Country {
                                          history.contains("changed_tag_from")) //For changed_tag don't want the change at the start of the game (custom country)
                       .forEachOrdered(s -> {
                           try {
-                              this.ancientsTags.put(Constants.DATE_FORMAT.parse(s.substring(0, s.indexOf("="))),
+                              this.ancientsTags.put(LocalDate.parse(s.substring(0, s.indexOf("=")), Constants.DATE_FORMAT),
                                                     ParseUtils.parseString(s, "changed_tag_from").orElse(""));
-                          } catch (ParseException e) {
+                          } catch (DateTimeParseException e) {
                               LOGGER.error("Can't parse date for changed tag from for {}: {}", this.tag, e.getMessage());
                           }
                       });
