@@ -14,6 +14,8 @@ public class Gamestate extends Eu4Object {
 
     private String currentAge;
 
+    private String revolutionTarget;
+
     private LocalDate startDate;
 
     private Map<String, Map<String, State>> states;
@@ -32,7 +34,7 @@ public class Gamestate extends Eu4Object {
 
     private String pope;
 
-    private Map<Long, Province> provinces;
+    private Map<String, List<Province>> provinces;
 
     private Map<Long, String> advisors;
 
@@ -62,6 +64,14 @@ public class Gamestate extends Eu4Object {
 
     public void setCurrentAge(String currentAge) {
         this.currentAge = currentAge;
+    }
+
+    public String getRevolutionTarget() {
+        return revolutionTarget;
+    }
+
+    public void setRevolutionTarget(String revolutionTarget) {
+        this.revolutionTarget = revolutionTarget;
     }
 
     public LocalDate getStartDate() {
@@ -144,11 +154,11 @@ public class Gamestate extends Eu4Object {
         this.advisors = advisors;
     }
 
-    public Map<Long, Province> getProvinces() {
+    public Map<String, List<Province>> getProvinces() {
         return provinces;
     }
 
-    public void setProvinces(Map<Long, Province> provinces) {
+    public void setProvinces(Map<String, List<Province>> provinces) {
         this.provinces = provinces;
     }
 
@@ -197,10 +207,11 @@ public class Gamestate extends Eu4Object {
         this.playersCountries = new HashMap<>();
         List<String> playerCountriesList = ParseUtils.parseListString(startContent, "players_countries");
         for (int i = 0; i < playerCountriesList.size(); i += 2) {
-            playersCountries.put(playerCountriesList.get(i), playerCountriesList.get(i + 1));
+            playersCountries.put(playerCountriesList.get(i + 1), playerCountriesList.get(i));
         }
 
         this.currentAge = ParseUtils.parseString(startContent, "current_age").orElse(null);
+        this.revolutionTarget = ParseUtils.parseString(startContent, "revolution_target").orElse(null);
         this.startDate = ParseUtils.parseDate(startContent, "start_date").orElse(null);
         this.states = parseStates(startContent);
         this.institutionOrigin = ParseUtils.parseLineLong(startContent, "institution_origin");
@@ -213,9 +224,11 @@ public class Gamestate extends Eu4Object {
                                .skip(1)
                                .map(ParseUtils::cleanString)
                                .map(Province::new)
-                               .collect(Collectors.toMap(Province::getId, Function.identity()));
+                               .filter(p -> p.getOwner() != null)
+                               .collect(Collectors.groupingBy(Province::getOwner));
         this.advisors = this.provinces.values()
                                       .stream()
+                                      .flatMap(Collection::stream)
                                       .filter(p -> p.getAdvisors() != null)
                                       .flatMap(p -> p.getAdvisors().entrySet().stream())
                                       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -10,4 +10,5 @@ public final class Constants {
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy.M.d");
     public static final String STARTING_TEXT = "EU4txt";
     public static final String DEFAULT_START_DATE = "1444.11.11";
+    public static final String MARCH_DEPENDENCY_TYPE = "march";
 }
