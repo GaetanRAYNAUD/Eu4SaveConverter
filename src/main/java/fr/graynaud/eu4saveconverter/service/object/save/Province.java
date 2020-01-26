@@ -178,7 +178,7 @@ public class Province extends Eu4Object {
         this.estate = estate;
     }
 
-    public Boolean getPartHRE() {
+    public Boolean isPartHRE() {
         return isPartHRE;
     }
 
