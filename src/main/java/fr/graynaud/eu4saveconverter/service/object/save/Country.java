@@ -6,7 +6,6 @@ import fr.graynaud.eu4saveconverter.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -127,6 +126,8 @@ public class Country {
     private List<String> policies;
 
     private Map<String, Double> factions;
+
+    private Double statistsVsMonarchists;
 
     public Country(String content, String startDate) {
         parse(content, startDate);
@@ -580,6 +581,14 @@ public class Country {
         this.factions = factions;
     }
 
+    public Double getStatistsVsMonarchists() {
+        return statistsVsMonarchists;
+    }
+
+    public void setStatistsVsMonarchists(Double statistsVsMonarchists) {
+        this.statistsVsMonarchists = statistsVsMonarchists;
+    }
+
     public void parse(String content, String startDate) {
         startDate = startDate.isBlank() ? Constants.DEFAULT_START_DATE : startDate;
         String finalStartDate = startDate;
@@ -644,7 +653,7 @@ public class Country {
             this.innovativeness = ParseUtils.parseDouble(content, "innovativeness").orElse(0d);
             this.policies = ParseUtils.getListSameObject(content, "active_policy")
                                       .stream()
-                                      .map(policy -> ParseUtils.parseString(policy, "policy"))
+                                      .map(policy -> ParseUtils.parseString(policy, "\tpolicy"))
                                       .filter(Optional::isPresent)
                                       .map(Optional::get)
                                       .collect(Collectors.toList());
@@ -655,6 +664,7 @@ public class Country {
                                                                     .map(type -> Map.entry(type, ParseUtils.parseDouble(faction, "influence")
                                                                                                            .orElse(0d))))
                                       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            this.statistsVsMonarchists = ParseUtils.parseDouble(content, "statists_vs_monarchists").orElse(null);
 
             int govNameIndex = content.indexOf("government_name=\"");
             if (govNameIndex >= 0) {

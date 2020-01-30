@@ -20,6 +20,8 @@ public class Gamestate extends Eu4Object {
 
     private Map<String, Map<String, State>> states;
 
+    private Map<String, Map<String, List<String>>> investments;
+
     private List<Long> institutionOrigin;
 
     private List<Boolean> institutions;
@@ -88,6 +90,14 @@ public class Gamestate extends Eu4Object {
 
     public void setStates(Map<String, Map<String, State>> states) {
         this.states = states;
+    }
+
+    public Map<String, Map<String, List<String>>> getInvestments() {
+        return investments;
+    }
+
+    public void setInvestments(Map<String, Map<String, List<String>>> investments) {
+        this.investments = investments;
     }
 
     public List<Long> getInstitutionOrigin() {
@@ -213,7 +223,7 @@ public class Gamestate extends Eu4Object {
         this.currentAge = ParseUtils.parseString(startContent, "current_age").orElse(null);
         this.revolutionTarget = ParseUtils.parseString(startContent, "revolution_target").orElse(null);
         this.startDate = ParseUtils.parseDate(startContent, "start_date").orElse(null);
-        this.states = parseStates(startContent);
+        parseStates(startContent);
         this.institutionOrigin = ParseUtils.parseLineLong(startContent, "institution_origin");
         this.institutions = ParseUtils.parseLineLongToBoolean(startContent, "institutions");
         this.productionLeaderTag = ParseUtils.parseLineString(startContent, "production_leader_tag");
@@ -259,18 +269,26 @@ public class Gamestate extends Eu4Object {
         return new ArrayList<>();
     }
 
-    private Map<String, Map<String, State>> parseStates(String content) {
+    private void parseStates(String content) {
         String subContent = ParseUtils.getNextObject(content, content.indexOf("map_area_data{"));
         subContent = subContent.substring(subContent.indexOf("\n"), subContent.lastIndexOf("\n"));
 
-        List<String> areas = Arrays.stream(subContent.split("\\n\\w.*=\\{"))
+        List<String> areas = Arrays.stream(subContent.split("(?=\\n\\w.*=\\{)"))
                                    .skip(1)
                                    .map(ParseUtils::cleanString)
                                    .filter(Objects::nonNull)
-                                   .filter(s -> s.contains("state={"))
+                                   .filter(s -> s.contains("state={") || s.contains("investments={"))
                                    .collect(Collectors.toList());
-        return areas.stream()
-                    .collect(Collectors.toMap(s -> ParseUtils.parseString(s, "area").orElse(null), this::parseArea));
+
+        this.states = areas.stream()
+                           .filter(s -> s.contains("state={"))
+                           .collect(Collectors.toMap(s -> ParseUtils.cleanString(s.substring(0, s.indexOf("="))),
+                                                     this::parseArea));
+
+        this.investments = areas.stream()
+                                .filter(s -> s.contains("investments={"))
+                                .collect(Collectors.toMap(s -> ParseUtils.cleanString(s.substring(0, s.indexOf("="))),
+                                                          this::parseInvestments));
     }
 
     private Map<String, State> parseArea(String content) {
@@ -278,5 +296,12 @@ public class Gamestate extends Eu4Object {
                      .skip(1)
                      .map(State::new)
                      .collect(Collectors.toMap(State::getCountry, Function.identity()));
+    }
+
+    private Map<String, List<String>> parseInvestments(String content) {
+        return ParseUtils.getListSameObject(content, "\n\t\tinvestments")
+                         .stream()
+                         .collect(Collectors.toMap(s -> ParseUtils.parseString(s, "tag")
+                                                                  .orElse(null), s -> ParseUtils.getCleanLineString(s, "\t\t\tinvestments")));
     }
 }

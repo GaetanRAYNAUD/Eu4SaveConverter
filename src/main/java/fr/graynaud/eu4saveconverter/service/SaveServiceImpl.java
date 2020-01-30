@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Map;
 
 @Service
@@ -22,7 +21,7 @@ public class SaveServiceImpl implements SaveService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveServiceImpl.class);
 
-    //Todo custom nations ideas index: 81 = 7.5% FL/lvl
+    //Todo area investments
 
     @Override
     public SaveDTO saveToData(MultipartFile multipartFile) throws IOException {

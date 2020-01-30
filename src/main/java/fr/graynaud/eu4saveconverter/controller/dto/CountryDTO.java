@@ -1,21 +1,29 @@
 package fr.graynaud.eu4saveconverter.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fr.graynaud.eu4saveconverter.common.Areas;
 import fr.graynaud.eu4saveconverter.service.object.save.Country;
 import fr.graynaud.eu4saveconverter.service.object.save.CustomColors;
 import fr.graynaud.eu4saveconverter.service.object.save.Province;
 import fr.graynaud.eu4saveconverter.service.object.save.SubjectType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CountryDTO {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CountryDTO.class);
 
     private String tag;
 
@@ -122,7 +130,22 @@ public class CountryDTO {
     @JsonIgnore
     private List<String> advisors;
 
-    public CountryDTO(Country country, Boolean isRevolutionTarget, Boolean isHreEmperor, List<Province> provinces, Map<Long, String> advisors) {
+    @JsonIgnore
+    private Map<Long, Long> customIdeas;
+
+    @JsonIgnore
+    private List<String> govReforms;
+
+    @JsonIgnore
+    private Double statistsVsMonarchists;
+
+    @JsonIgnore
+    private List<String> investments;
+
+    @JsonIgnore
+    private List<String> states;
+
+    public CountryDTO(Country country, Boolean isRevolutionTarget, Boolean isHreEmperor, List<Province> provinces, Map<Long, String> advisors, List<String> investments, List<String> states) {
         this.tag = country.getTag();
         this.govName = country.getGovName();
         this.govRank = country.getGovRank();
@@ -157,6 +180,11 @@ public class CountryDTO {
         this.policies = country.getPolicies();
         this.provinces = provinces.stream().collect(Collectors.toMap(Province::getId, Function.identity()));
         this.advisors = country.getAdvisors().stream().map(advisors::get).collect(Collectors.toList());
+        this.customIdeas = country.getCustomIdeas();
+        this.govReforms = country.getGovReforms();
+        this.statistsVsMonarchists = country.getStatistsVsMonarchists();
+        this.investments = investments;
+        this.states = states;
 
         if (isHreEmperor) {
             this.isHreEmperor = true;
@@ -557,20 +585,20 @@ public class CountryDTO {
         this.isInHre = isInHre;
     }
 
-    public void computePostData(long nbCountriesInHre) {
-        computeForceLimit(nbCountriesInHre);
+    public void computePostData(long nbCountriesInHre, String eastSlavicCultureFullController) {
+        computeForceLimit(nbCountriesInHre, eastSlavicCultureFullController);
     }
 
-    private void computeForceLimit(long nbCountriesInHre) {
-        double forceLimit = 6L; //Base for every nation
+    private void computeForceLimit(long nbCountriesInHre, String eastSlavicCultureFullController) {
+        AtomicReference<BigDecimal> forceLimit = new AtomicReference<>(BigDecimal.valueOf(6d)); //Base for every nation
         AtomicLong forceLimitModifier = new AtomicLong(100L);
         AtomicLong subjectForceLimitModifier = new AtomicLong(100L);
 
         if (Boolean.TRUE.equals(this.isDependency)) {
-            forceLimit -= 3;
+            forceLimit.set(forceLimit.get().subtract(BigDecimal.valueOf(3)));
         }
 
-        if (Boolean.TRUE.equals(this.isMarch)) {
+        if (Boolean.TRUE.equals(this.isMarch)) { //Need to compute the liberty desire because if more than 50% this bonus is not active
             forceLimitModifier.addAndGet(30);
         }
 
@@ -579,11 +607,11 @@ public class CountryDTO {
         }
 
         if (Boolean.TRUE.equals(this.isHreEmperor)) {
-            forceLimit += (double) nbCountriesInHre / 2;
+            forceLimit.set(forceLimit.get().add(BigDecimal.valueOf((double) nbCountriesInHre / 2)));
         }
 
         if (this.tag.equals("JMN")) {
-            forceLimit += 100;
+            forceLimit.set(forceLimit.get().add(BigDecimal.valueOf(100)));
         }
 
         if (this.tradeBonus.contains(1L)) {
@@ -760,6 +788,21 @@ public class CountryDTO {
                     }
 
                     break;
+
+                case "custom_national_ideas_level":
+                    if (this.customIdeas.containsKey(81L)) { //81 is custom idea for FL
+                        if (level == 7 || new ArrayList<>(this.customIdeas.keySet()).subList(7, 9)
+                                                                                    .contains(81L)) { //Pos 7/8 are traditions
+                            forceLimitModifier.addAndGet((long) (this.customIdeas.get(81L) *
+                                                                 7.5)); //Each level of custom idea gives 7.5%
+                        }
+
+                        if (level != 0 &&
+                            new ArrayList<>(this.customIdeas.keySet()).subList(0, Math.toIntExact(level))
+                                                                      .contains(81L)) { //If idea is in the level's first ideas
+                            forceLimitModifier.addAndGet((long) (this.customIdeas.get(81L) * 7.5));
+                        }
+                    }
             }
         });
 
@@ -780,26 +823,135 @@ public class CountryDTO {
         List<CountryDTO> vassals = this.dependencies.getOrDefault(SubjectType.VASSAL, new ArrayList<>());
         List<CountryDTO> clients = this.dependencies.getOrDefault(SubjectType.CLIENT, new ArrayList<>());
         List<CountryDTO> marches = this.dependencies.getOrDefault(SubjectType.MARCH, new ArrayList<>());
-        forceLimit += (vassals.size() + (vassals.stream().mapToLong(CountryDTO::getForceLimit).sum() * 0.1)) *
-                      ((double) subjectForceLimitModifier.get() / 100);
-        forceLimit += (clients.size() + (clients.stream().mapToLong(CountryDTO::getForceLimit).sum() * 0.1)) *
-                      ((double) subjectForceLimitModifier.get() / 100);
-        forceLimit += (marches.size() + (marches.stream().mapToLong(CountryDTO::getForceLimit).sum() * 0.2)) *
-                      ((double) subjectForceLimitModifier.get() / 100);
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         (BigDecimal.valueOf(vassals.size())) // +1 per vassal
+                                                                              .add(BigDecimal.valueOf(vassals.stream()
+                                                                                                             .mapToLong(CountryDTO::getForceLimit)
+                                                                                                             .sum())
+                                                                                             .divide(BigDecimal.TEN, MathContext.DECIMAL64)) // +10% of vassal's FL
+                                                                              .multiply(BigDecimal.valueOf(subjectForceLimitModifier
+                                                                                                                   .get())
+                                                                                                  .divide(BigDecimal.valueOf(100), MathContext.DECIMAL64)) // x subject modifier
+                                     )
+                      );
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         (BigDecimal.valueOf(clients.size())) // +1 per client
+                                                                              .add(BigDecimal.valueOf(clients.stream()
+                                                                                                             .mapToLong(CountryDTO::getForceLimit)
+                                                                                                             .sum())
+                                                                                             .divide(BigDecimal.TEN, MathContext.DECIMAL64)) // +10% of client's FL
+                                                                              .multiply(BigDecimal.valueOf(subjectForceLimitModifier
+                                                                                                                   .get())
+                                                                                                  .divide(BigDecimal.valueOf(100), MathContext.DECIMAL64)) // x subject modifier
+                                     )
+                      );
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         (BigDecimal.valueOf(marches.size())) // +1 per march
+                                                                              .add(BigDecimal.valueOf(marches.stream()
+                                                                                                             .mapToLong(CountryDTO::getForceLimit)
+                                                                                                             .sum())
+                                                                                             .divide(BigDecimal.valueOf(5), MathContext.DECIMAL64)) // +20% of march's FL
+                                                                              .multiply(BigDecimal.valueOf(subjectForceLimitModifier
+                                                                                                                   .get())
+                                                                                                  .divide(BigDecimal.valueOf(100), MathContext.DECIMAL64)) // x subject modifier
+                                     )
+                      );
 
-        forceLimit += this.dependencies.getOrDefault(SubjectType.COLONY, new ArrayList<>())
-                                       .stream()
-                                       .filter(c -> c.getNbProvinces() >= 10)
-                                       .count() * 5;
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         BigDecimal.valueOf(
+                                                 this.dependencies.getOrDefault(SubjectType.COLONY, new ArrayList<>())
+                                                                  .stream()
+                                                                  .filter(c -> c.getNbProvinces() >= 10)
+                                                                  .count()
+                                                           )
+                                                   .multiply(BigDecimal.valueOf(5)) // +5 per colony that have at least 10 provinces
+                                     )
+                      );
 
-        forceLimit += provinces.values()
-                               .stream()
-                               .map(Province::getBuildings)
-                               .filter(Objects::nonNull)
-                               .flatMap(map -> map.keySet().stream())
-                               .filter("native_fortified_house"::equals)
-                               .count() * 10;
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         BigDecimal.valueOf(provinces.values()
+                                                                     .stream()
+                                                                     .map(Province::getBuildings)
+                                                                     .filter(Objects::nonNull)
+                                                                     .flatMap(map -> map.keySet().stream())
+                                                                     .filter("native_fortified_house"::equals)
+                                                                     .count()
+                                                           )
+                                                   .multiply(BigDecimal.TEN)) //+10 per native_fortified_house
+                      ); //Not in provinces because is not affected by autonomy
 
-        this.forceLimit = (long) forceLimit * (forceLimitModifier.get() / 100);
+        forceLimitModifier.addAndGet(this.govReforms.stream()
+                                                    .filter(reform -> "steppe_horde".equals(reform) ||
+                                                                      "great_mongol_state_reform".equals(reform) ||
+                                                                      "steppe_horde_legacy".equals(reform) ||
+                                                                      "great_mongol_state_legacy".equals(reform))
+                                                    .count() * 20);
+
+        if ((this.govReforms.contains("dutch_republic") || this.govReforms.contains("dutch_republic_legacy")) &&
+            this.statistsVsMonarchists != null && this.statistsVsMonarchists > 0) {
+            forceLimitModifier.addAndGet(25);
+        }
+
+        if (eastSlavicCultureFullController != null && this.govReforms.contains("mughal_government") &&
+            eastSlavicCultureFullController.equals(this.tag)) {
+            forceLimitModifier.addAndGet(10);
+        }
+
+        forceLimit.set(forceLimit.get()
+                                 .add(
+                                         BigDecimal.valueOf(this.investments.stream()
+                                                                            .filter("officers_mess"::equals)
+                                                                            .count()
+                                                           )
+                                                   .multiply(BigDecimal.valueOf(5))
+                                     )
+                      );
+
+        AtomicReference<BigDecimal> provincesForceLimit = new AtomicReference<>(BigDecimal.ZERO);
+        this.provinces.values().forEach(province -> {
+            BigDecimal localForceLimit = BigDecimal.ZERO;
+            localForceLimit = localForceLimit.add(BigDecimal.valueOf(province.getBaseTax()).divide((BigDecimal.TEN), MathContext.DECIMAL64));
+            localForceLimit = localForceLimit.add(BigDecimal.valueOf(province.getBaseProd()).divide((BigDecimal.TEN), MathContext.DECIMAL64));
+            localForceLimit = localForceLimit.add(BigDecimal.valueOf(province.getBaseManpower()).divide((BigDecimal.TEN), MathContext.DECIMAL64));
+
+            if ("grain".equals(province.getGood())) {
+                localForceLimit = localForceLimit.add(BigDecimal.ONE.divide(BigDecimal.valueOf(2), MathContext.DECIMAL64));
+            }
+
+            if (province.getBuildings() != null) {
+                if (province.getBuildings().containsKey("regimental_camp")) {
+                    localForceLimit = localForceLimit.add(BigDecimal.ONE);
+                }
+
+                if (province.getBuildings().containsKey("conscription_center")) {
+                    localForceLimit = localForceLimit.add(BigDecimal.valueOf(2));
+                }
+            }
+
+            //Rajputs, Nobility, Cossacks, Tribes remove the effect of local autonomy
+            if (province.getEstate() == null || (province.getEstate() != 2 && province.getEstate() != 6 &&
+                                                 province.getEstate() != 8 && province.getEstate() != 9)) {
+                if (province.getEstate() != null && province.getAutonomy() < 25d) {
+                    province.setAutonomy(25d);
+                }
+
+                if (!this.states.contains(Areas.provinceArea.get(province.getId())) && province.getAutonomy() < 75d) {
+                    province.setAutonomy(75d);
+                }
+
+                localForceLimit = localForceLimit.multiply(BigDecimal.valueOf(100).subtract(BigDecimal.valueOf(province.getAutonomy()))).divide(BigDecimal.valueOf(100), MathContext.DECIMAL64);
+            }
+
+            forceLimit.set(forceLimit.get().add(localForceLimit));
+            provincesForceLimit.set(provincesForceLimit.get().add(localForceLimit));
+        });
+
+        LOGGER.info("{}: FL: {}, FL modifier: {}", this.tag, forceLimit.get(), forceLimitModifier);
+        this.forceLimit = forceLimit.get().multiply(BigDecimal.valueOf(forceLimitModifier.get()).divide(BigDecimal.valueOf(100), MathContext.DECIMAL64)).longValue();
     }
 }

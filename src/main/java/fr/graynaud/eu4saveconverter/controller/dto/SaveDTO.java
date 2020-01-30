@@ -2,18 +2,21 @@ package fr.graynaud.eu4saveconverter.controller.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fr.graynaud.eu4saveconverter.common.Constants;
-import fr.graynaud.eu4saveconverter.service.object.save.*;
+import fr.graynaud.eu4saveconverter.service.object.save.Dependency;
+import fr.graynaud.eu4saveconverter.service.object.save.Gamestate;
+import fr.graynaud.eu4saveconverter.service.object.save.Province;
+import fr.graynaud.eu4saveconverter.service.object.save.SubjectType;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SaveDTO {
 
-    private LocalDate date;
+    private LocalDate currentDate;
 
     private LocalDate startDate;
 
@@ -22,22 +25,39 @@ public class SaveDTO {
     @JsonIgnore
     private Map<String, CountryDTO> countries;
 
-    public SaveDTO(Gamestate gamestate, LocalDate date) {
-        this.date = date;
+    public SaveDTO(Gamestate gamestate, LocalDate currentDate) {
+        this.currentDate = currentDate;
         this.startDate = gamestate.getStartDate();
         this.countries = gamestate.getCountries()
                                   .values()
                                   .stream()
                                   .filter(country -> country.getCapital() != null && country.getCapital() != 0 &&
-                                                     country.getContinents()
-                                                            .contains(Boolean.TRUE)) //Filtering dead countries
+                                                     country.getContinents().contains(Boolean.TRUE) &&
+                                                     gamestate.getProvinces().get(country.getTag()) !=
+                                                     null) //Filtering dead countries
                                   .map(country -> new CountryDTO(country,
                                                                  country.getTag()
                                                                         .equals(gamestate.getRevolutionTarget()),
                                                                  country.getTag()
                                                                         .equals(gamestate.getEmpire().getEmperor()),
                                                                  gamestate.getProvinces().get(country.getTag()),
-                                                                 gamestate.getAdvisors()))
+                                                                 gamestate.getAdvisors(),
+                                                                 gamestate.getInvestments()
+                                                                          .values()
+                                                                          .stream()
+                                                                          .flatMap(map -> map.entrySet().stream())
+                                                                          .filter(entry -> entry.getKey()
+                                                                                                .equals(country.getTag()))
+                                                                          .flatMap(entry -> entry.getValue().stream())
+                                                                          .collect(Collectors.toList()),
+                                                                 gamestate.getStates()
+                                                                          .entrySet()
+                                                                          .stream()
+                                                                          .filter(entry -> entry.getValue()
+                                                                                                .get(country.getTag()) !=
+                                                                                           null)
+                                                                          .map(Map.Entry::getKey)
+                                                                          .collect(Collectors.toList())))
                                   .collect(Collectors.toMap(CountryDTO::getTag, Function.identity()));
 
         this.countries.forEach((tag, countryDTO) -> {
@@ -57,6 +77,7 @@ public class SaveDTO {
             boolean isDependency = gamestate.getDiplomacy()
                                             .getDependencies()
                                             .stream()
+                                            .filter(d -> !d.getSubjectType().equals(SubjectType.TRIBUTARY))
                                             .anyMatch(d -> tag.equals(d.getSecond()));
             boolean isMarch = isDependency && gamestate.getDiplomacy()
                                                        .getDependencies()
@@ -68,38 +89,64 @@ public class SaveDTO {
             countryDTO.setIsMarch(isMarch);
         });
 
+        AtomicReference<Optional<String>> eastSlavicProvincesSameTag = new AtomicReference<>(Optional.empty());
+        gamestate.getProvinces()
+                 .values()
+                 .stream()
+                 .flatMap(Collection::stream)
+                 .filter(p -> Constants.EAST_SLAVIC_CULTURES.contains(p.getCulture()))
+                 .findFirst()
+                 .ifPresent(province -> {
+                     if (gamestate.getProvinces()
+                                  .values()
+                                  .stream()
+                                  .flatMap(Collection::stream)
+                                  .filter(p -> Constants.EAST_SLAVIC_CULTURES.contains(p.getCulture()))
+                                  .map(Province::getOwner)
+                                  .allMatch(owner -> province.getOwner().equals(owner))) {
+                         eastSlavicProvincesSameTag.set(Optional.of(province.getOwner()));
+                     }
+                 });
+
         long nbCountriesInHre = this.countries.values().stream().filter(c -> Boolean.TRUE.equals(c.isInHre())).count();
         this.countries.values()
                       .stream()
-                      .filter(c -> c.isDependency() && c.getDependencies().isEmpty()) //Process first dependencies that does not have any
-                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre));
+                      .filter(c -> c.isDependency() &&
+                                   c.getDependencies().isEmpty()) //Process first dependencies that does not have any
+                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre, eastSlavicProvincesSameTag.get()
+                                                                                                                    .orElse(null)));
         this.countries.values()
                       .stream()
-                      .filter(c -> c.isDependency() && !c.getDependencies().isEmpty()) //Then dependencies that have some
-                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre));
+                      .filter(c -> c.isDependency() &&
+                                   !c.getDependencies().isEmpty()) //Then dependencies that have some
+                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre, eastSlavicProvincesSameTag.get()
+                                                                                                                    .orElse(null)));
         this.countries.values()
                       .stream()
                       .filter(Predicate.not(CountryDTO::isDependency)) //Then not dependency
-                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre));
+                      .forEach(countryDTO -> countryDTO.computePostData(nbCountriesInHre, eastSlavicProvincesSameTag.get()
+                                                                                                                    .orElse(null)));
 
 
         gamestate.getPlayersCountries().forEach((tag, player) -> {
             CountryDTO countryDTO = this.countries.get(tag);
-            countryDTO.setPlayer(player);
-            this.playerCountries.add(countryDTO);
+
+            if (countryDTO != null) { //null means dead country or changed tag
+                countryDTO.setPlayer(player);
+                this.playerCountries.add(countryDTO);
+            }
         });
 
         this.playerCountries.sort(Comparator.comparing(CountryDTO::getGreatPowerScore).reversed());
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getCurrentDate() {
+        return currentDate;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setCurrentDate(LocalDate currentDate) {
+        this.currentDate = currentDate;
     }
-
 
     public LocalDate getStartDate() {
         return startDate;
