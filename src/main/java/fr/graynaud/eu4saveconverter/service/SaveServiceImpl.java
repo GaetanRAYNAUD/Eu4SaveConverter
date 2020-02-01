@@ -37,7 +37,6 @@ public class SaveServiceImpl implements SaveService {
             throw new MissingFileException(SaveFile.META.name());
         }
 
-
         if (gamestateContent.startsWith(Constants.STARTING_TEXT)) {
             gamestateContent = gamestateContent.substring(Constants.STARTING_TEXT.length());
         }

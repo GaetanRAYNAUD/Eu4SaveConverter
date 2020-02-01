@@ -6,6 +6,7 @@ import fr.graynaud.eu4saveconverter.service.object.save.Country;
 import fr.graynaud.eu4saveconverter.service.object.save.CustomColors;
 import fr.graynaud.eu4saveconverter.service.object.save.Province;
 import fr.graynaud.eu4saveconverter.service.object.save.SubjectType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Schema(name = "Country")
 public class CountryDTO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CountryDTO.class);

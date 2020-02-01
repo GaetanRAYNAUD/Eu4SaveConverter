@@ -6,6 +6,7 @@ import fr.graynaud.eu4saveconverter.service.object.save.Dependency;
 import fr.graynaud.eu4saveconverter.service.object.save.Gamestate;
 import fr.graynaud.eu4saveconverter.service.object.save.Province;
 import fr.graynaud.eu4saveconverter.service.object.save.SubjectType;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -14,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Schema(name = "Save")
 public class SaveDTO {
 
     private LocalDate currentDate;
