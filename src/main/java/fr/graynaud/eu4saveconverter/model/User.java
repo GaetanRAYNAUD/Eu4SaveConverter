@@ -20,6 +20,9 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user", orphanRemoval = true)
     private Set<Role> roles;
 
+    @OneToMany(mappedBy = "user")
+    private Set<Campaign> campaigns;
+
     public String getSteamId() {
         return steamId;
     }
@@ -42,5 +45,13 @@ public class User extends BaseEntity {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public Set<Campaign> getCampaigns() {
+        return campaigns;
+    }
+
+    public void setCampaigns(Set<Campaign> campaigns) {
+        this.campaigns = campaigns;
     }
 }

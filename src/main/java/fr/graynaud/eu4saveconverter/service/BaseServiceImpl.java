@@ -6,6 +6,8 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +18,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, R extends BaseReposi
 
     protected final R repository;
 
-    protected BaseServiceImpl(R repository) {
+    public BaseServiceImpl(R repository) {
         this.repository = repository;
     }
 
