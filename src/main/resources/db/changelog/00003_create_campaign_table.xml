@@ -30,7 +30,7 @@
         <constraints nullable="false"/>
       </column>
 
-      <column name="creation_user" type="varchar(18)">
+      <column name="creation_user" type="varchar(64)">
         <constraints nullable="false"/>
       </column>
 
@@ -38,13 +38,9 @@
         <constraints nullable="false"/>
       </column>
 
-      <column name="modification_user" type="varchar(18)">
+      <column name="modification_user" type="varchar(64)">
         <constraints nullable="false"/>
       </column>
     </createTable>
-
-    <createIndex indexName="idx_path" tableName="campaign">
-      <column name="path"/>
-    </createIndex>
   </changeSet>
 </databaseChangeLog>

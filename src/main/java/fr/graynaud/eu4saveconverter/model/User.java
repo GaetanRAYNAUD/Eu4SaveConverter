@@ -1,34 +1,65 @@
 package fr.graynaud.eu4saveconverter.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity(name = "User")
 @Table(name = "user")
 public class User extends BaseEntity {
 
-    @Column(name = "steam_id", length = 18, unique = true, nullable = false)
-    private String steamId;
+    @Column(name = "login", length = 64, nullable = false, unique = true, updatable = false)
+    private String login;
 
-    @Column(name = "last_connection_date", nullable = false)
+    @Column(name = "password_hash", length = 60, nullable = false)
+    private String passwordHash;
+
+    @Column(name = "reset_key", length = 30, unique = true)
+    private String resetKey;
+
+    @Column(name = "reset_date")
+    private Date resetDate;
+
+    @Column(name = "last_connection_date")
     private Date lastConnectionDate;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.PERSIST})
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user")
     private Set<Campaign> campaigns;
 
-    public String getSteamId() {
-        return steamId;
+    public String getLogin() {
+        return login;
     }
 
-    public void setSteamId(String steamId) {
-        this.steamId = steamId;
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getResetKey() {
+        return resetKey;
+    }
+
+    public void setResetKey(String resetKey) {
+        this.resetKey = resetKey;
+    }
+
+    public Date getResetDate() {
+        return resetDate;
+    }
+
+    public void setResetDate(Date resetDate) {
+        this.resetDate = resetDate;
     }
 
     public Date getLastConnectionDate() {
@@ -45,6 +76,14 @@ public class User extends BaseEntity {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        if (this.roles == null) {
+            this.roles = new HashSet<>();
+        }
+
+        this.roles.add(role);
     }
 
     public Set<Campaign> getCampaigns() {

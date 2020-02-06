@@ -1,6 +1,7 @@
 package fr.graynaud.eu4saveconverter.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
@@ -20,6 +21,17 @@ public class WebProperties {
     private String actuatorUser;
 
     private String actuatorPassword;
+
+    private String frontBaseUrl;
+
+    private String publicKey;
+
+    private String privateKey;
+
+    private Integer expirationToken;
+
+    @NestedConfigurationProperty
+    private AuthProperties auth;
 
     public String getTitle() {
         return title;
@@ -67,5 +79,45 @@ public class WebProperties {
 
     public void setActuatorPassword(String actuatorPassword) {
         this.actuatorPassword = actuatorPassword;
+    }
+
+    public String getFrontBaseUrl() {
+        return frontBaseUrl;
+    }
+
+    public void setFrontBaseUrl(String frontBaseUrl) {
+        this.frontBaseUrl = frontBaseUrl;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public String getPrivateKey() {
+        return privateKey;
+    }
+
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
+    }
+
+    public Integer getExpirationToken() {
+        return expirationToken;
+    }
+
+    public void setExpirationToken(Integer expirationToken) {
+        this.expirationToken = expirationToken;
+    }
+
+    public AuthProperties getAuth() {
+        return auth;
+    }
+
+    public void setAuth(AuthProperties auth) {
+        this.auth = auth;
     }
 }

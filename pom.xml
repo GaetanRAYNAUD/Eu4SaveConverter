@@ -20,6 +20,7 @@
     <liquibase.version>3.8.5</liquibase.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <springdoc-openapi-ui.version>1.2.29</springdoc-openapi-ui.version>
+    <jjwt.version>0.10.7</jjwt.version>
   </properties>
 
   <dependencies>
@@ -75,7 +76,6 @@
       <artifactId>springdoc-openapi-security</artifactId>
       <version>${springdoc-openapi-ui.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
@@ -92,6 +92,21 @@
           <artifactId>junit-vintage-engine</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>${jjwt.version}</version>
     </dependency>
   </dependencies>
 

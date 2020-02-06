@@ -17,7 +17,7 @@ import java.util.Date;
 public abstract class BaseEntity implements Serializable {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Integer id;
 
@@ -25,7 +25,7 @@ public abstract class BaseEntity implements Serializable {
     @CreatedDate
     private Date creationDate;
 
-    @Column(name = "creation_user", updatable = false)
+    @Column(name = "creation_user", updatable = false, length = 64)
     @CreatedBy
     private String creationUser;
 
@@ -33,7 +33,7 @@ public abstract class BaseEntity implements Serializable {
     @LastModifiedDate
     private Date modificationDate;
 
-    @Column(name = "modification_user")
+    @Column(name = "modification_user", length = 64)
     @LastModifiedBy
     private String modificationUser;
 

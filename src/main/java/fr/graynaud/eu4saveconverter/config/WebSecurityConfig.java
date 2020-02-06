@@ -1,6 +1,9 @@
 package fr.graynaud.eu4saveconverter.config;
 
+import fr.graynaud.eu4saveconverter.config.authentication.TokenFilter;
 import fr.graynaud.eu4saveconverter.config.properties.WebProperties;
+import fr.graynaud.eu4saveconverter.service.SecurityService;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -91,5 +94,14 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<TokenFilter> tokenFilterFilterRegistrationBean(SecurityService securityService){
+        FilterRegistrationBean<TokenFilter> registrationBean = new FilterRegistrationBean<>();
+        registrationBean.setFilter(new TokenFilter(securityService));
+        registrationBean.addUrlPatterns("/api/*");
+
+        return registrationBean;
     }
 }
