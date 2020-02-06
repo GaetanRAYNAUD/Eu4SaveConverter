@@ -21,6 +21,16 @@ public class Campaign extends BaseEntity {
     @JoinColumn(name = "user_id") //Nullable in case the user is deleted, we want to keep the campaigns
     private User user;
 
+    public Campaign() {
+    }
+
+    public Campaign(String name, String path, User user) {
+        this.name = name;
+        this.path = path;
+        this.nbSaves = 0;
+        this.user = user;
+    }
+
     public String getName() {
         return name;
     }

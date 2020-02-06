@@ -1,5 +1,6 @@
 package fr.graynaud.eu4saveconverter.common;
 
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
@@ -35,5 +36,11 @@ public final class Utils {
         } catch (DateTimeParseException ignored) {
             return Optional.empty();
         }
+    }
+
+    public static String generatePath(String s) {
+        return Normalizer.normalize(s.toLowerCase().trim(), Normalizer.Form.NFD)
+                         .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                         .replaceAll("[^\\p{Alnum}]+", "-");
     }
 }
