@@ -96,7 +96,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public User getCurrentUser() {
-        return userService.getByLogin(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
+        return userService.findOne(Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName()));
     }
 
     private Claims getClaims(String bearerToken) {
@@ -123,7 +123,7 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     private Authentication getAuthorizationFromUser(User user) {
-        return new UsernamePasswordAuthenticationToken(user.getLogin(), null, user
+        return new UsernamePasswordAuthenticationToken(user.getId(), null, user
                 .getRoles()
                 .stream()
                 .map(Role::getName)

@@ -16,20 +16,27 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Schema(name = "Save")
-public class SaveDTO {
+public class SaveDTO implements Comparable<SaveDTO> {
 
     private LocalDate currentDate;
 
-    private LocalDate startDate;
+    private LocalDate campaignStartDate;
 
     private List<CountryDTO> playerCountries = new ArrayList<>();
+
+    private Long totalDevelopment;
+
+    private Long totalLosses;
 
     @JsonIgnore
     private Map<String, CountryDTO> countries;
 
+    public SaveDTO() {
+    }
+
     public SaveDTO(Gamestate gamestate, LocalDate currentDate) {
         this.currentDate = currentDate;
-        this.startDate = gamestate.getStartDate();
+        this.campaignStartDate = gamestate.getStartDate();
         this.countries = gamestate.getCountries()
                                   .values()
                                   .stream()
@@ -140,6 +147,8 @@ public class SaveDTO {
         });
 
         this.playerCountries.sort(Comparator.comparing(CountryDTO::getGreatPowerScore).reversed());
+        this.totalDevelopment = (long) this.playerCountries.stream().mapToDouble(CountryDTO::getTotalDevelopment).sum();
+        this.totalLosses = (long) this.playerCountries.stream().mapToDouble(CountryDTO::getLosses).sum();
     }
 
     public LocalDate getCurrentDate() {
@@ -150,12 +159,28 @@ public class SaveDTO {
         this.currentDate = currentDate;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
+    public LocalDate getCampaignStartDate() {
+        return campaignStartDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+    public void setCampaignStartDate(LocalDate campaignStartDate) {
+        this.campaignStartDate = campaignStartDate;
+    }
+
+    public Long getTotalDevelopment() {
+        return totalDevelopment;
+    }
+
+    public void setTotalDevelopment(Long totalDevelopment) {
+        this.totalDevelopment = totalDevelopment;
+    }
+
+    public Long getTotalLosses() {
+        return totalLosses;
+    }
+
+    public void setTotalLosses(Long totalLosses) {
+        this.totalLosses = totalLosses;
     }
 
     public List<CountryDTO> getPlayerCountries() {
@@ -164,5 +189,10 @@ public class SaveDTO {
 
     public void setPlayerCountries(List<CountryDTO> playerCountries) {
         this.playerCountries = playerCountries;
+    }
+
+    @Override
+    public int compareTo(SaveDTO other) {
+        return this.currentDate.compareTo(other.currentDate);
     }
 }

@@ -1,6 +1,8 @@
 package fr.graynaud.eu4saveconverter.controller.campaign;
 
 import fr.graynaud.eu4saveconverter.controller.dto.CampaignCreateForm;
+import fr.graynaud.eu4saveconverter.controller.dto.CampaignDTO;
+import fr.graynaud.eu4saveconverter.controller.dto.PathForm;
 import fr.graynaud.eu4saveconverter.controller.dto.SaveDTO;
 import fr.graynaud.eu4saveconverter.service.CampaignService;
 import fr.graynaud.eu4saveconverter.service.SaveService;
@@ -35,9 +37,8 @@ public class CampaignController {
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> create(@RequestPart(name = "save") MultipartFile save, CampaignCreateForm campaignCreateForm) throws IOException {
-        campaignService.create(campaignCreateForm.getName(), save);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<PathForm> create(@RequestPart(name = "save") MultipartFile save, CampaignCreateForm campaignCreateForm) throws IOException {
+        return new ResponseEntity<>(new PathForm(campaignService.create(campaignCreateForm.getName(), save)), HttpStatus.OK);
     }
 
     @PostMapping(value = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

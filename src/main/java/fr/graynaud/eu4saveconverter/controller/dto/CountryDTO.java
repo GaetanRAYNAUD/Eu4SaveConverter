@@ -105,7 +105,7 @@ public class CountryDTO {
 
     private Long nbProvinces;
 
-    private Double totalDev;
+    private Double totalDevelopment;
 
     private Long nbBuildings;
 
@@ -146,6 +146,9 @@ public class CountryDTO {
 
     @JsonIgnore
     private List<String> states;
+
+    public CountryDTO() {
+    }
 
     public CountryDTO(Country country, Boolean isRevolutionTarget, Boolean isHreEmperor, List<Province> provinces, Map<Long, String> advisors, List<String> investments, List<String> states) {
         this.tag = country.getTag();
@@ -208,10 +211,10 @@ public class CountryDTO {
         }
 
         this.nbProvinces = (long) this.provinces.size();
-        this.totalDev = this.provinces.values()
-                                      .stream()
-                                      .mapToDouble(p -> p.getBaseTax() + p.getBaseProd() + p.getBaseManpower())
-                                      .sum();
+        this.totalDevelopment = this.provinces.values()
+                                              .stream()
+                                              .mapToDouble(p -> p.getBaseTax() + p.getBaseProd() + p.getBaseManpower())
+                                              .sum();
         this.nbBuildings = this.provinces.values()
                                          .stream()
                                          .filter(p -> p.getBuildings() != null)
@@ -531,12 +534,12 @@ public class CountryDTO {
         this.nbProvinces = nbProvinces;
     }
 
-    public Double getTotalDev() {
-        return totalDev;
+    public Double getTotalDevelopment() {
+        return totalDevelopment;
     }
 
-    public void setTotalDev(Double totalDev) {
-        this.totalDev = totalDev;
+    public void setTotalDevelopment(Double totalDevelopment) {
+        this.totalDevelopment = totalDevelopment;
     }
 
     public Long getNbBuildings() {
@@ -953,7 +956,6 @@ public class CountryDTO {
             provincesForceLimit.set(provincesForceLimit.get().add(localForceLimit));
         });
 
-        LOGGER.info("{}: FL: {}, FL modifier: {}", this.tag, forceLimit.get(), forceLimitModifier);
         this.forceLimit = forceLimit.get().multiply(BigDecimal.valueOf(forceLimitModifier.get()).divide(BigDecimal.valueOf(100), MathContext.DECIMAL64)).longValue();
     }
 }

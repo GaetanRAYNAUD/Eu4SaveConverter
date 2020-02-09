@@ -108,6 +108,13 @@ public class ExceptionTranslator {
     }
 
     @ExceptionHandler
+    public ResponseEntity<ErrorObject> handleCampaignReadException(CampaignReadException e) {
+        LOGGER.error("An error occurred while read campaign from file: {} !", e.getMessage(), e);
+
+        return new ResponseEntity<>(new ErrorObject(ErrorCode.DEFAULT_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<ErrorObject> handleException(Exception e) {
         LOGGER.error(e.getMessage(), e);
 

@@ -1,8 +1,6 @@
 package fr.graynaud.eu4saveconverter.model;
 
 import javax.persistence.*;
-import java.util.Date;
-import java.util.Set;
 
 @Entity(name = "Campaign")
 @Table(name = "campaign")
@@ -55,11 +53,19 @@ public class Campaign extends BaseEntity {
         this.nbSaves = nbSaves;
     }
 
+    public void addSave() {
+        this.nbSaves++;
+    }
+
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String toFileName() {
+        return this.path + "_" + this.nbSaves + ".json";
     }
 }

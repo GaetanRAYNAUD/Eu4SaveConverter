@@ -30,6 +30,8 @@ public class WebProperties {
 
     private Integer expirationToken;
 
+    private String dataFolderPath;
+
     @NestedConfigurationProperty
     private AuthProperties auth;
 
@@ -111,6 +113,14 @@ public class WebProperties {
 
     public void setExpirationToken(Integer expirationToken) {
         this.expirationToken = expirationToken;
+    }
+
+    public String getDataFolderPath() {
+        return dataFolderPath;
+    }
+
+    public void setDataFolderPath(String dataFolderPath) {
+        this.dataFolderPath = dataFolderPath;
     }
 
     public AuthProperties getAuth() {

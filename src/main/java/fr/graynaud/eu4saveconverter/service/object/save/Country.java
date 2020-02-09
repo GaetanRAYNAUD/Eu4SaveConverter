@@ -6,6 +6,8 @@ import fr.graynaud.eu4saveconverter.common.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -637,7 +639,11 @@ public class Country {
             this.legitimacy = ParseUtils.parseDouble(content, "legitimacy").orElse(0d);
             this.mercantilism = ParseUtils.parseDouble(content, "mercantilism").orElse(0d);
             this.absolutism = ParseUtils.parseDouble(content, "\tabsolutism").orElse(0d);
-            this.professionalism = ParseUtils.parseDouble(content, "army_professionalism").orElse(0d) * 100;
+            this.professionalism = BigDecimal.valueOf(ParseUtils.parseDouble(content, "army_professionalism")
+                                                                .orElse(0d))
+                                             .multiply(BigDecimal.valueOf(100L))
+                                             .setScale(3, RoundingMode.HALF_UP)
+                                             .doubleValue();
             this.advisors = ParseUtils.getListSameObject(content, "\n\t\tadvisor")
                                       .stream()
                                       .map(advisor -> ParseUtils.parseLong(advisor, "id"))

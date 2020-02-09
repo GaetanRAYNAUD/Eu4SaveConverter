@@ -14,6 +14,9 @@ public class CustomColors extends Eu4Object {
 
     private List<Long> flagColors;
 
+    public CustomColors() {
+    }
+
     public CustomColors(String content) {
         super(content);
     }
