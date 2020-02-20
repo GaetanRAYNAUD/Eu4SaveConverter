@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -592,6 +589,11 @@ public class CountryDTO {
 
     public void computePostData(long nbCountriesInHre, String eastSlavicCultureFullController) {
         computeForceLimit(nbCountriesInHre, eastSlavicCultureFullController);
+    }
+
+    @JsonIgnore
+    public String getFirstTag() {
+        return (this.ancientsTags == null || this.ancientsTags.isEmpty()) ? this.tag : Collections.min(this.ancientsTags.entrySet(), Map.Entry.comparingByKey()).getValue();
     }
 
     private void computeForceLimit(long nbCountriesInHre, String eastSlavicCultureFullController) {
